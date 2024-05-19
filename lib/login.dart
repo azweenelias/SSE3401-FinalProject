@@ -140,6 +140,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
               SizedBox(width: 10),
               Expanded(
                 child: const TextField(
+                  key: Key("phone1"),
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Phone Number',
@@ -257,6 +258,7 @@ class _OTPPageState extends State<OTPPage> {
             ),
             SizedBox(height: 50),
             TextField(
+              key: Key("otp"),
               maxLength: 6,
               controller: otpController,
               textAlign: TextAlign.center,

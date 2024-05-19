@@ -110,16 +110,19 @@ class _FactoryPageState extends State<FactoryPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       FactoryButton(
+                        key: Key("factory1"),
                         factoryNumber: 1,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
                       SizedBox(width: 15),
                       FactoryButton(
+                        key: Key("factory2"),
                         factoryNumber: 2,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
                       SizedBox(width: 15),
                       FactoryButton(
+                        key: Key("factory3"),
                         factoryNumber: 3,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
@@ -134,9 +137,9 @@ class _FactoryPageState extends State<FactoryPage> {
       bottomNavigationBar: BottomNavigationBar(
         selectedFontSize: 0,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.person_outlined), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outlined, key: Key("person_icon")), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.home, key: Key("home_icon")), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.settings, key: Key("settings_icon")), label: ''),
         ],
         currentIndex: currentIndex,
         onTap: (int index) {
@@ -238,7 +241,7 @@ class _ContactSectionState extends State<ContactSection> {
                           currentFactoryIndex: widget.currentFactoryIndex)),
                 );
               },
-              child: Icon(Icons.add),
+              child: Icon(Icons.add, key: Key("add_button")),
             ),
           ),
         ],
@@ -334,6 +337,7 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
               const SizedBox(height: 10),
               TextField(
+                key: Key("name"),
                 controller: nameController,
                 decoration: InputDecoration(
                   filled: true,
@@ -361,6 +365,7 @@ class _InvitationPageState extends State<InvitationPage> {
                   SizedBox(width: 10),
                   Expanded(
                     child: TextField(
+                      key: Key("phone2"),
                       controller: phoneController,
                       decoration: InputDecoration(
                         filled: true,
@@ -592,7 +597,7 @@ class ThresholdSection extends StatelessWidget {
               children: [
                 _ThresholdText(title: 'Steam Pressure', value: 29, unit: 'bar'),
                 _ThresholdText(title: 'Steam Flow', value: 22, unit: 'T/H'),
-                _ThresholdText(title: 'Water Level', value: 53, unit: 'b%'),
+                _ThresholdText(title: 'Water Level', value: 53, unit: '%'),
                 _ThresholdText(title: 'Power Frequency', value: 48, unit: 'Hz'),
               ],
             ),
