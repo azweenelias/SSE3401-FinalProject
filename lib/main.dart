@@ -170,8 +170,8 @@ class FactoryButton extends StatelessWidget {
           changeFactoryIndex(factoryNumber);
         },
         style: ElevatedButton.styleFrom(
-          primary: Colors.white,
-          onPrimary: Colors.black,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
