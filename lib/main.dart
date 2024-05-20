@@ -18,7 +18,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        debugShowCheckedModeBanner: false, home: const LoginPage());
+        debugShowCheckedModeBanner: false, home: const FactoryPage());
   }
 }
 
@@ -420,7 +420,7 @@ class _FactoryReaderState extends State<FactoryReader> {
   Widget build(BuildContext context) {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.9,
-      height: MediaQuery.of(context).size.height * 0.56,
+      height: MediaQuery.of(context).size.height * 0.6,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
