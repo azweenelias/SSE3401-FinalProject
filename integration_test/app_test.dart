@@ -36,7 +36,6 @@ void main() {
       final settingsIcon = find.byKey(Key("settings_icon"));
       final factory1 = find.byKey(Key("factory1"));
       final factory2 = find.byKey(Key("factory2"));
-      final factory3 = find.byKey(Key("factory3"));
       
       await tester.tap(homeIcon);
       await tester.pumpAndSettle();
