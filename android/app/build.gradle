@@ -66,16 +66,12 @@ flutter {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.12'
 
+    testImplementation 'junit:junit:4.12'
     implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
-    // https://developer.android.com/jetpack/androidx/releases/test/#1.2.0
+    implementation "org,jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation("com.google.firebase:firebase-analytics")
 }
 
-plugins{
-    id("com.google.gms.google-services")
-    id("com.android.application")
-}
+
