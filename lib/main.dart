@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
-import 'package:lab5/login.dart';
-import 'package:lab5/user.dart';
+import 'login.dart';
+import 'user.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,8 +17,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        debugShowCheckedModeBanner: false, home: const LoginPage());
+    return const MaterialApp(
+        debugShowCheckedModeBanner: false, home: LoginPage());
   }
 }
 
@@ -44,12 +44,12 @@ class _FactoryPageState extends State<FactoryPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Factory $currentFactoryIndex'),
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
             color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings),
             iconSize: 30,
             onPressed: () {
               // Add your logic here
@@ -110,19 +110,19 @@ class _FactoryPageState extends State<FactoryPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       FactoryButton(
-                        key: Key("factory1"),
+                        key: const Key("factory1"),
                         factoryNumber: 1,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       FactoryButton(
-                        key: Key("factory2"),
+                        key: const Key("factory2"),
                         factoryNumber: 2,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       FactoryButton(
-                        key: Key("factory3"),
+                        key: const Key("factory3"),
                         factoryNumber: 3,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
@@ -137,9 +137,13 @@ class _FactoryPageState extends State<FactoryPage> {
       bottomNavigationBar: BottomNavigationBar(
         selectedFontSize: 0,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.person_outlined, key: Key("person_icon")), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.home, key: Key("home_icon")), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.settings, key: Key("settings_icon")), label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outlined, key: Key("person_icon")),
+              label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home, key: Key("home_icon")), label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.settings, key: Key("settings_icon")), label: ''),
         ],
         currentIndex: currentIndex,
         onTap: (int index) {
@@ -179,9 +183,10 @@ class FactoryButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.factory, size: 50),
-            SizedBox(height: 20),
-            Text('Factory ${factoryNumber}', style: TextStyle(fontSize: 20)),
+            const Icon(Icons.factory, size: 50),
+            const SizedBox(height: 20),
+            Text('Factory ${factoryNumber}',
+                style: const TextStyle(fontSize: 20)),
           ],
         ),
       ),
@@ -221,7 +226,8 @@ class _ContactSectionState extends State<ContactSection> {
                     color: Colors.blueGrey[100],
                     shadowColor: Colors.black,
                     child: ListTile(
-                      leading: Icon(Icons.circle, size: 20, color: Colors.grey),
+                      leading: const Icon(Icons.circle,
+                          size: 20, color: Colors.grey),
                       title: Text(users[index].name),
                       subtitle: Text(users[index].phone),
                     ),
@@ -241,7 +247,7 @@ class _ContactSectionState extends State<ContactSection> {
                           currentFactoryIndex: widget.currentFactoryIndex)),
                 );
               },
-              child: Icon(Icons.add, key: Key("add_button")),
+              child: const Icon(Icons.add, key: Key("add_button")),
             ),
           ),
         ],
@@ -276,26 +282,31 @@ class _InvitationPageState extends State<InvitationPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    nameController.addListener(() {_checkSubmitButton();});
-    phoneController.addListener(() {_checkSubmitButton();});
-  }
-
-  void _checkSubmitButton(){
-    setState((){
-      isSubmitEnabled = nameController.text.isNotEmpty && phoneController.text.isNotEmpty;
+    nameController.addListener(() {
+      _checkSubmitButton();
+    });
+    phoneController.addListener(() {
+      _checkSubmitButton();
     });
   }
 
-  void addUser(String name, String phone){
-  users.add(User(name: name, phone: phone));
-}
+  void _checkSubmitButton() {
+    setState(() {
+      isSubmitEnabled =
+          nameController.text.isNotEmpty && phoneController.text.isNotEmpty;
+    });
+  }
+
+  void addUser(String name, String phone) {
+    users.add(User(name: name, phone: phone));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back,
             color: Colors.black,
           ),
@@ -307,7 +318,7 @@ class _InvitationPageState extends State<InvitationPage> {
         title: Text(
           'Factory ${widget.currentFactoryIndex}',
         ),
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
             color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
         centerTitle: true,
       ),
@@ -337,9 +348,9 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
               const SizedBox(height: 10),
               TextField(
-                key: Key("name"),
+                key: const Key("name"),
                 controller: nameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(),
@@ -347,11 +358,11 @@ class _InvitationPageState extends State<InvitationPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text(
+              const Text(
                 "Owner\'s Phone Number",
                 style: TextStyle(fontSize: 20),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Image.asset(
@@ -360,14 +371,14 @@ class _InvitationPageState extends State<InvitationPage> {
                     height: 30,
                     fit: BoxFit.contain,
                   ),
-                  SizedBox(width: 10),
-                  Text("+60", style: TextStyle(fontSize: 20)),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
+                  const Text("+60", style: TextStyle(fontSize: 20)),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
-                      key: Key("phone2"),
+                      key: const Key("phone2"),
                       controller: phoneController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(),
@@ -377,13 +388,22 @@ class _InvitationPageState extends State<InvitationPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               SizedBox(
                 height: 50,
                 width: MediaQuery.of(context).size.width,
-                child: ElevatedButton(onPressed: isSubmitEnabled ? () {
-                  addUser(nameController.text, '+60${phoneController.text}');
-                } : null, child: Text("Submit", style: TextStyle(fontSize: 20),),),
+                child: ElevatedButton(
+                  onPressed: isSubmitEnabled
+                      ? () {
+                          addUser(nameController.text,
+                              '+60${phoneController.text}');
+                        }
+                      : null,
+                  child: const Text(
+                    "Submit",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
               ),
             ],
           ),
@@ -433,7 +453,7 @@ class _FactoryReaderState extends State<FactoryReader> {
               widget.voltageSensor == 0
                   ? 'ABD1234 IS UNREACHABLE'
                   : '${widget.voltageSensor} kW',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
               ),
@@ -442,7 +462,7 @@ class _FactoryReaderState extends State<FactoryReader> {
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               children: [
                 _buildGaugeContainer(
                   title: 'Steam Pressure',
@@ -466,10 +486,10 @@ class _FactoryReaderState extends State<FactoryReader> {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               widget.readingDateTime,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.normal,
               ),
@@ -518,7 +538,7 @@ class _FactoryReaderState extends State<FactoryReader> {
                         endAngle: 0,
                         radiusFactor: 1.5,
                         canScaleToFit: true,
-                        axisLineStyle: AxisLineStyle(
+                        axisLineStyle: const AxisLineStyle(
                           thickness: 0.3,
                           thicknessUnit: GaugeSizeUnit.factor,
                         ),
@@ -534,7 +554,7 @@ class _FactoryReaderState extends State<FactoryReader> {
                           GaugeAnnotation(
                             widget: Text(
                               '$value $unit',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -565,35 +585,35 @@ class ThresholdSection extends StatelessWidget {
       width: MediaQuery.of(context).size.width * 0.9,
       height: MediaQuery.of(context).size.height * 0.56,
       child: Container(
-        padding: EdgeInsets.fromLTRB(20, 20, 10, 20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 10, 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: Colors.grey[100],
         ),
         child: Column(
           children: [
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Expanded(
+                const Expanded(
                     child: Text(
                   'Minimum Threshold',
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 )),
-                Icon(Icons.info_outline_rounded, size: 30),
+                const Icon(Icons.info_outline_rounded, size: 30),
                 ElevatedButton(
                   onPressed: () {},
-                  child: Icon(Icons.edit),
+                  child: const Icon(Icons.edit),
                 )
               ],
             ),
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               children: [
                 _ThresholdText(title: 'Steam Pressure', value: 29, unit: 'bar'),
                 _ThresholdText(title: 'Steam Flow', value: 22, unit: 'T/H'),
@@ -622,17 +642,17 @@ class ThresholdSection extends StatelessWidget {
           children: [
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black),
               textAlign: TextAlign.center,
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Container(
-              padding: EdgeInsets.all(5),
+              padding: const EdgeInsets.all(5),
               width: 120,
               height: 60,
               decoration: BoxDecoration(
@@ -646,7 +666,7 @@ class ThresholdSection extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '$value',
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.black),
@@ -662,7 +682,7 @@ class ThresholdSection extends StatelessWidget {
                     width: 40,
                     child: Text(
                       '$unit',
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black),

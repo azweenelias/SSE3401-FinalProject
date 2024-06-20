@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lab5/background.dart';
-import 'package:lab5/main.dart';
+import 'background.dart';
+import 'main.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
     return Background(
       child: SingleChildScrollView(
           child: Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
         color: Colors.white,
@@ -92,7 +92,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.5,
       width: MediaQuery.of(context).size.width,
-      padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+      padding: const EdgeInsets.fromLTRB(15, 20, 15, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -101,7 +101,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
             color: Colors.grey.withOpacity(0.5),
             spreadRadius: 5,
             blurRadius: 7,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -126,7 +126,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
               )
             ],
           ),
-          SizedBox(height: 60),
+          const SizedBox(height: 60),
           Row(
             children: [
               Image.asset(
@@ -135,11 +135,11 @@ class _PhoneLoginState extends State<PhoneLogin> {
                 height: 30,
                 fit: BoxFit.contain,
               ),
-              SizedBox(width: 10),
-              Text("+60", style: TextStyle(fontSize: 20)),
-              SizedBox(width: 10),
-              Expanded(
-                child: const TextField(
+              const SizedBox(width: 10),
+              const Text("+60", style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: TextField(
                   key: Key("phone1"),
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -161,7 +161,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                   });
                 },
               ),
-              Text('I agree to the terms and conditions',
+              const Text('I agree to the terms and conditions',
                   style: TextStyle(fontSize: 15))
             ],
           ),
@@ -222,7 +222,7 @@ class _OTPPageState extends State<OTPPage> {
     return Container(
         height: MediaQuery.of(context).size.height * 0.5,
         width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+        padding: const EdgeInsets.fromLTRB(15, 20, 15, 20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
@@ -231,7 +231,7 @@ class _OTPPageState extends State<OTPPage> {
               color: Colors.grey.withOpacity(0.5),
               spreadRadius: 5,
               blurRadius: 7,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -256,9 +256,9 @@ class _OTPPageState extends State<OTPPage> {
                 )
               ],
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             TextField(
-              key: Key("otp"),
+              key: const Key("otp"),
               maxLength: 6,
               controller: otpController,
               textAlign: TextAlign.center,
@@ -300,7 +300,7 @@ class _OTPPageState extends State<OTPPage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => FactoryPage()));
+                                builder: (context) => const FactoryPage()));
                       }
                     : null,
                 child: const Text(

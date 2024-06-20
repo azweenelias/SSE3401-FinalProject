@@ -6,10 +6,10 @@ import 'package:lab5/main.dart' as app;
 void main() {
   group('App Test', () {
     IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-    testWidgets("full app test", (tester) async{
+    testWidgets("full app test", (tester) async {
       app.main();
       await tester.pumpAndSettle();
-      
+
       //phone login page test
       final phoneFormField = find.byKey(const Key("phone1"));
       final phoneCheckBox = find.byType(Checkbox).first;
@@ -20,7 +20,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(loginButton);
       await tester.pumpAndSettle();
-      
+
       //otp page test
       final otpFormField = find.byKey(const Key("otp"));
       final otpButton = find.byType(ElevatedButton).first;
@@ -31,12 +31,12 @@ void main() {
       await tester.pumpAndSettle();
 
       //nav button test
-      final personIcon = find.byKey(Key("person_icon"));
-      final homeIcon = find.byKey(Key("home_icon"));
-      final settingsIcon = find.byKey(Key("settings_icon"));
-      final factory1 = find.byKey(Key("factory1"));
-      final factory2 = find.byKey(Key("factory2"));
-      
+      final personIcon = find.byKey(const Key("person_icon"));
+      final homeIcon = find.byKey(const Key("home_icon"));
+      final settingsIcon = find.byKey(const Key("settings_icon"));
+      final factory1 = find.byKey(const Key("factory1"));
+      final factory2 = find.byKey(const Key("factory2"));
+
       await tester.tap(homeIcon);
       await tester.pumpAndSettle();
       await tester.tap(factory1);
@@ -57,7 +57,7 @@ void main() {
       await tester.pumpAndSettle();
 
       //home page test
-      final addButton = find.byKey(Key("add_button"));
+      final addButton = find.byKey(const Key("add_button"));
 
       await tester.tap(addButton);
       await tester.pumpAndSettle();
@@ -76,6 +76,4 @@ void main() {
       await tester.pumpAndSettle();
     });
   });
-  
-
 }
