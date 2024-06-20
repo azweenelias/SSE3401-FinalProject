@@ -109,7 +109,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
         children: [
           const SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Expanded(
                 child: SizedBox(
