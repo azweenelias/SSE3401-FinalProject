@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             currentState == 1
                 ? PhoneLogin(changeState: changeState)
-                : const OTPPage(),
+                : const OTPPage(phoneNumber: '',),
             const SizedBox(height: 20),
             const Center(
               child: Text(
@@ -75,6 +75,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
+
 class PhoneLogin extends StatefulWidget {
   final Function changeState;
 
@@ -87,6 +88,7 @@ class PhoneLogin extends StatefulWidget {
 class _PhoneLoginState extends State<PhoneLogin> {
   bool isChecked = false;
   TextEditingController phoneController = TextEditingController();
+  String phoneNumber = ''; // Add phone number variable
 
   @override
   Widget build(BuildContext context) {
@@ -177,8 +179,10 @@ class _PhoneLoginState extends State<PhoneLogin> {
               onPressed: isChecked
                   ? () {
                       addUser();
+                      // Update phoneNumber variable
+                      phoneNumber = phoneController.text.trim();
                       // Call function to request OTP after user is registered
-                      requestOTP(phoneController.text.trim());
+                      requestOTP(phoneNumber);
                       widget.changeState();
                     }
                   : null,
@@ -248,16 +252,19 @@ class _PhoneLoginState extends State<PhoneLogin> {
   }
 }
 
+
 class OTPPage extends StatefulWidget {
-  const OTPPage({Key? key}) : super(key: key);
+  final String phoneNumber; // Define phoneNumber as a parameter
+
+  const OTPPage({Key? key, required this.phoneNumber}) : super(key: key);
 
   @override
   State<OTPPage> createState() => _OTPPageState();
 }
-
 class _OTPPageState extends State<OTPPage> {
   TextEditingController otpController = TextEditingController();
   bool isFilled = false;
+  
 
   void initState() {
     super.initState();
@@ -278,10 +285,12 @@ class _OTPPageState extends State<OTPPage> {
   }
 
   void activateUser(String otp) async {
-    final url = Uri.parse(
-        'http://10.104.0.248:5001/api/activate'); // Replace with your activation API URL
+    final url = Uri.parse('http://10.104.0.248:5001/api/activate');
     final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode({'otp': otp}); // Send OTP in the request body
+    final body = jsonEncode({
+      'phone': widget.phoneNumber, // Use phoneNumber from widget
+      'otp': otp,
+    });
 
     print('Sending activation request to $url with body: $body');
 
@@ -292,13 +301,51 @@ class _OTPPageState extends State<OTPPage> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         print('User activated successfully');
         // Navigate to next screen or handle success
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FactoryPage()),
+        );
       } else {
         print('Failed to activate user: ${response.statusCode}');
         // Handle activation failure
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Activation Failed'),
+              content: const Text('Failed to activate user. Please try again.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
       }
     } catch (e) {
       print('Error activating user: $e');
       // Handle activation error
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text('Error activating user: $e'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -386,16 +433,10 @@ class _OTPPageState extends State<OTPPage> {
               onPressed: isFilled
                   ? () {
                       // Assuming you have a function to validate OTP
-                      if (otpController.text.trim() == '123456') {
+                      if (otpController.text.trim().length == 6) {
                         activateUser(otpController.text.trim());
-                        // Navigate to next screen or handle success
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const FactoryPage()),
-                        );
                       } else {
-                        // Handle incorrect OTP
+                        // Handle incorrect OTP length
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
