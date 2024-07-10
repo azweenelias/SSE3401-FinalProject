@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'background.dart';
 import 'main.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,9 +44,7 @@ class _LoginPageState extends State<LoginPage> {
               style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
             ),
             currentState == 1
-                ? PhoneLogin(
-                    changeState: changeState,
-                  )
+                ? PhoneLogin(changeState: changeState)
                 : const OTPPage(),
             const SizedBox(height: 20),
             const Center(
@@ -76,16 +76,17 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class PhoneLogin extends StatefulWidget {
-  final VoidCallback changeState;
+  final Function changeState;
 
-  const PhoneLogin({Key? key, required this.changeState}) : super(key: key);
+  PhoneLogin({required this.changeState});
 
   @override
-  State<PhoneLogin> createState() => _PhoneLoginState();
+  _PhoneLoginState createState() => _PhoneLoginState();
 }
 
 class _PhoneLoginState extends State<PhoneLogin> {
   bool isChecked = false;
+  TextEditingController phoneController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -113,11 +114,14 @@ class _PhoneLoginState extends State<PhoneLogin> {
             children: [
               Expanded(
                 child: SizedBox(
-                    child: Text(
-                  'Enter your mobile number to activate your account.',
-                  style: TextStyle(
-                      fontSize: 20, color: Colors.black.withOpacity(0.6)),
-                )),
+                  child: Text(
+                    'Enter your mobile number to activate your account.',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.black.withOpacity(0.6),
+                    ),
+                  ),
+                ),
               ),
               Icon(
                 Icons.info_outline_rounded,
@@ -138,10 +142,11 @@ class _PhoneLoginState extends State<PhoneLogin> {
               const SizedBox(width: 10),
               const Text("+60", style: TextStyle(fontSize: 20)),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: TextField(
+                  controller: phoneController,
                   key: Key("phone1"),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Phone Number',
                   ),
@@ -171,14 +176,18 @@ class _PhoneLoginState extends State<PhoneLogin> {
             child: ElevatedButton(
               onPressed: isChecked
                   ? () {
-                      setState(() {
-                        widget.changeState();
-                      });
+                      addUser();
+                      // Call function to request OTP after user is registered
+                      requestOTP(phoneController.text.trim());
+                      widget.changeState();
                     }
                   : null,
               child: const Text(
                 'Get Activation Code',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.normal,
+                ),
               ),
             ),
           ),
@@ -186,10 +195,61 @@ class _PhoneLoginState extends State<PhoneLogin> {
       ),
     );
   }
+
+  void addUser() async {
+    final String phoneNumber = phoneController.text.trim();
+    if (phoneNumber.isEmpty) {
+      print('Phone number is empty.');
+      return;
+    }
+
+    final url = Uri.parse('http://10.104.0.248:5001/api/register');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'phone': phoneNumber});
+
+    print('Sending request to $url with body: $body');
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('User added successfully');
+        // After user is added successfully, request OTP
+        requestOTP(phoneNumber);
+        // Optionally, you can navigate to OTP verification screen here
+      } else {
+        print('Failed to add user: ${response.statusCode}');
+        // Handle failure to add user
+      }
+    } catch (e) {
+      print('Error adding user: $e');
+      // Handle error
+    }
+  }
+
+  // Function to request OTP from backend
+  void requestOTP(String phoneNumber) async {
+    final url = Uri.parse('http://10.104.0.248:5001/api/otp');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'phone': phoneNumber});
+
+    print('Requesting OTP from $url with body: $body');
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      print('OTP request status: ${response.statusCode}');
+      print('OTP request body: ${response.body}');
+      // Handle OTP request response here
+    } catch (e) {
+      print('Error requesting OTP: $e');
+      // Handle error
+    }
+  }
 }
 
 class OTPPage extends StatefulWidget {
-  const OTPPage({super.key});
+  const OTPPage({Key? key}) : super(key: key);
 
   @override
   State<OTPPage> createState() => _OTPPageState();
@@ -217,99 +277,153 @@ class _OTPPageState extends State<OTPPage> {
     });
   }
 
+  void activateUser(String otp) async {
+    final url = Uri.parse(
+        'http://10.104.0.248:5001/api/activate'); // Replace with your activation API URL
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'otp': otp}); // Send OTP in the request body
+
+    print('Sending activation request to $url with body: $body');
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      print('Activation response status: ${response.statusCode}');
+      print('Activation response body: ${response.body}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('User activated successfully');
+        // Navigate to next screen or handle success
+      } else {
+        print('Failed to activate user: ${response.statusCode}');
+        // Handle activation failure
+      }
+    } catch (e) {
+      print('Error activating user: $e');
+      // Handle activation error
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-        height: MediaQuery.of(context).size.height * 0.5,
-        width: MediaQuery.of(context).size.width,
-        padding: const EdgeInsets.fromLTRB(15, 20, 15, 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 5,
-              blurRadius: 7,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: SizedBox(
-                      child: Text(
+      height: MediaQuery.of(context).size.height * 0.5,
+      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.fromLTRB(15, 20, 15, 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: SizedBox(
+                  child: Text(
                     'Enter the activation code you received via SMS.',
                     style: TextStyle(
-                        fontSize: 20, color: Colors.black.withOpacity(0.6)),
-                  )),
-                ),
-                Icon(
-                  Icons.info_outline_rounded,
-                  size: 30,
-                  color: Colors.black.withOpacity(0.6),
-                )
-              ],
-            ),
-            const SizedBox(height: 50),
-            TextField(
-              key: const Key("otp"),
-              maxLength: 6,
-              controller: otpController,
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.black.withOpacity(0.6)),
-                ),
-                hintText: 'OTP',
-                hintStyle: TextStyle(
-                  fontSize: 20,
-                  color: Colors.black.withOpacity(0.6),
-                ),
-                alignLabelWithHint: true,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Didnt receive?', style: TextStyle(fontSize: 20)),
-                Text(
-                  'Tap here',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                    decorationColor: Colors.blue,
+                      fontSize: 20,
+                      color: Colors.black.withOpacity(0.6),
+                    ),
                   ),
-                )
-              ],
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                onPressed: isFilled
-                    ? () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const FactoryPage()));
-                      }
-                    : null,
-                child: const Text(
-                  'Activate',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
                 ),
               ),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 30,
+                color: Colors.black.withOpacity(0.6),
+              )
+            ],
+          ),
+          const SizedBox(height: 50),
+          TextField(
+            key: const Key("otp"),
+            maxLength: 6,
+            controller: otpController,
+            textAlign: TextAlign.center,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.black.withOpacity(0.6)),
+              ),
+              hintText: 'OTP',
+              hintStyle: TextStyle(
+                fontSize: 20,
+                color: Colors.black.withOpacity(0.6),
+              ),
+              alignLabelWithHint: true,
             ),
-          ],
-        ));
+          ),
+          const SizedBox(height: 20),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Didn\'t receive?', style: TextStyle(fontSize: 20)),
+              Text(
+                'Tap here',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.blue,
+                ),
+              )
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 50,
+            child: ElevatedButton(
+              onPressed: isFilled
+                  ? () {
+                      // Assuming you have a function to validate OTP
+                      if (otpController.text.trim() == '123456') {
+                        activateUser(otpController.text.trim());
+                        // Navigate to next screen or handle success
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const FactoryPage()),
+                        );
+                      } else {
+                        // Handle incorrect OTP
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Invalid OTP'),
+                              content: const Text('Please enter a valid OTP.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    }
+                  : null,
+              child: const Text(
+                'Activate',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
