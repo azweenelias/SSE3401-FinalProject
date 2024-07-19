@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'login.dart';
 import 'user.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,6 +42,8 @@ class _FactoryPageState extends State<FactoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    String formattedDateTime =
+        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     return Scaffold(
       appBar: AppBar(
         title: Text('Factory $currentFactoryIndex'),
@@ -77,13 +80,13 @@ class _FactoryPageState extends State<FactoryPage> {
                           readingDateTime: '--:--',
                         )
                       : currentFactoryIndex == 2
-                          ? const FactoryReader(
+                          ? FactoryReader(
                               voltageSensor: 1549.7,
                               readingSteamPressure: 34.19,
                               readingSteamFlow: 22.82,
                               readingWaterLevel: 55.41,
                               readingPowerFrequency: 50.08,
-                              readingDateTime: '2024-04-26 13:45:25')
+                              readingDateTime: formattedDateTime)
                           : const FactoryReader(
                               voltageSensor: 0,
                               readingSteamPressure: 0,
