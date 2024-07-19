@@ -33,6 +33,7 @@ class FactoryPage extends StatefulWidget {
 class _FactoryPageState extends State<FactoryPage> {
   int currentIndex = 0;
   int currentFactoryIndex = 1;
+  
 
   void changeFactoryIndex(int factoryNumber) {
     setState(() {
@@ -42,8 +43,7 @@ class _FactoryPageState extends State<FactoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    String formattedDateTime =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+     String formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     return Scaffold(
       appBar: AppBar(
         title: Text('Factory $currentFactoryIndex'),
@@ -80,7 +80,7 @@ class _FactoryPageState extends State<FactoryPage> {
                           readingDateTime: '--:--',
                         )
                       : currentFactoryIndex == 2
-                          ? FactoryReader(
+                          ?  FactoryReader(
                               voltageSensor: 1549.7,
                               readingSteamPressure: 34.19,
                               readingSteamFlow: 22.82,
