@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'login.dart';
@@ -207,6 +209,9 @@ class ContactSection extends StatefulWidget {
 class _ContactSectionState extends State<ContactSection> {
   @override
   Widget build(BuildContext context) {
+    List<User> usersForFactory =
+        factoryContacts[widget.currentFactoryIndex] ?? [];
+
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.9,
       height: MediaQuery.of(context).size.height * 0.56,
@@ -219,8 +224,7 @@ class _ContactSectionState extends State<ContactSection> {
                 color: Colors.grey[100],
               ),
               child: ListView.builder(
-                itemCount: users.length,
-                //
+                itemCount: usersForFactory.length,
                 itemBuilder: (context, index) {
                   return Card(
                     color: Colors.blueGrey[100],
@@ -228,8 +232,8 @@ class _ContactSectionState extends State<ContactSection> {
                     child: ListTile(
                       leading: const Icon(Icons.circle,
                           size: 20, color: Colors.grey),
-                      title: Text(users[index].name),
-                      subtitle: Text(users[index].phone),
+                      title: Text(usersForFactory[index].name),
+                      subtitle: Text(usersForFactory[index].phone),
                     ),
                   );
                 },
@@ -280,7 +284,6 @@ class _InvitationPageState extends State<InvitationPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     nameController.addListener(() {
       _checkSubmitButton();
@@ -297,8 +300,63 @@ class _InvitationPageState extends State<InvitationPage> {
     });
   }
 
-  void addUser(String name, String phone) {
-    users.add(User(name: name, phone: phone));
+  Future<void> addUser(String name, String phone) async {
+    final String url =
+        'http://10.114.16.240:5000/api/factories/${widget.currentFactoryIndex}/engineers';
+    final headers = {
+      'Authorization':
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjgzYjM5ODMzZjI0NDU4YTk0NzUwYjciLCJpYXQiOjE3MTk5MDc2MjYsImV4cCI6MTcyMDUxMjQyNn0.vTYhqP_U-q06txwlHkYkLR8Ws4IJNC37YXXBx-blO-M',
+      'Content-Type': 'application/json',
+    };
+    final body = jsonEncode({
+      "engineers": [
+        {
+          "name": name,
+          "specialization": "Normal Engineer",
+          "phoneNumber": phone,
+        }
+      ]
+    });
+
+    try {
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final newUser = User(name: name, phone: phone);
+        setState(() {
+          if (factoryContacts.containsKey(widget.currentFactoryIndex)) {
+            factoryContacts[widget.currentFactoryIndex]!.add(newUser);
+          } else {
+            factoryContacts[widget.currentFactoryIndex] = [newUser];
+          }
+        });
+        Navigator.pop(context);
+      } else {
+        _showErrorDialog('Failed to add user: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showErrorDialog('Error adding user: $e');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
