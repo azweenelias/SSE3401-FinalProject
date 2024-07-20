@@ -25,8 +25,8 @@ class _MyAppState extends State<MyApp> {
 }
 
 class FactoryPage extends StatefulWidget {
+  //token from login page
  final String token;
-
   const FactoryPage({Key? key, required this.token}) : super(key: key);
 
 
