@@ -1,8 +1,9 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'login.dart';
 import 'user.dart';
-import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,9 +25,10 @@ class _MyAppState extends State<MyApp> {
 }
 
 class FactoryPage extends StatefulWidget {
-  final String token;
+ final String token;
 
   const FactoryPage({Key? key, required this.token}) : super(key: key);
+
 
   @override
   State<FactoryPage> createState() => _FactoryPageState();
@@ -35,7 +37,6 @@ class FactoryPage extends StatefulWidget {
 class _FactoryPageState extends State<FactoryPage> {
   int currentIndex = 0;
   int currentFactoryIndex = 1;
-  
 
   void changeFactoryIndex(int factoryNumber) {
     setState(() {
@@ -45,7 +46,6 @@ class _FactoryPageState extends State<FactoryPage> {
 
   @override
   Widget build(BuildContext context) {
-     String formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     return Scaffold(
       appBar: AppBar(
         title: Text('Factory $currentFactoryIndex'),
@@ -82,13 +82,13 @@ class _FactoryPageState extends State<FactoryPage> {
                           readingDateTime: '--:--',
                         )
                       : currentFactoryIndex == 2
-                          ?  FactoryReader(
+                          ? const FactoryReader(
                               voltageSensor: 1549.7,
                               readingSteamPressure: 34.19,
                               readingSteamFlow: 22.82,
                               readingWaterLevel: 55.41,
                               readingPowerFrequency: 50.08,
-                              readingDateTime: formattedDateTime)
+                              readingDateTime: '2024-04-26 13:45:25')
                           : const FactoryReader(
                               voltageSensor: 0,
                               readingSteamPressure: 0,
@@ -212,6 +212,9 @@ class ContactSection extends StatefulWidget {
 class _ContactSectionState extends State<ContactSection> {
   @override
   Widget build(BuildContext context) {
+    List<User> usersForFactory =
+        factoryContacts[widget.currentFactoryIndex] ?? [];
+
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.9,
       height: MediaQuery.of(context).size.height * 0.56,
@@ -224,8 +227,7 @@ class _ContactSectionState extends State<ContactSection> {
                 color: Colors.grey[100],
               ),
               child: ListView.builder(
-                itemCount: users.length,
-                //
+                itemCount: usersForFactory.length,
                 itemBuilder: (context, index) {
                   return Card(
                     color: Colors.blueGrey[100],
@@ -233,8 +235,8 @@ class _ContactSectionState extends State<ContactSection> {
                     child: ListTile(
                       leading: const Icon(Icons.circle,
                           size: 20, color: Colors.grey),
-                      title: Text(users[index].name),
-                      subtitle: Text(users[index].phone),
+                      title: Text(usersForFactory[index].name),
+                      subtitle: Text(usersForFactory[index].phone),
                     ),
                   );
                 },
@@ -285,7 +287,6 @@ class _InvitationPageState extends State<InvitationPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     nameController.addListener(() {
       _checkSubmitButton();
@@ -302,8 +303,63 @@ class _InvitationPageState extends State<InvitationPage> {
     });
   }
 
-  void addUser(String name, String phone) {
-    users.add(User(name: name, phone: phone));
+  Future<void> addUser(String name, String phone) async {
+    final String url =
+        'http://10.104.0.248:5001/api/factories/66840cbc5bd189c3098c8510/engineers';
+    final headers = {
+      'Authorization':
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjgzYjM5ODMzZjI0NDU4YTk0NzUwYjciLCJpYXQiOjE3MTk5MDc2MjYsImV4cCI6MTcyMDUxMjQyNn0.vTYhqP_U-q06txwlHkYkLR8Ws4IJNC37YXXBx-blO-M',
+      'Content-Type': 'application/json',
+    };
+    final body = jsonEncode({
+      "engineers": [
+        {
+          "name": name,
+          "specialization": "Normal Engineer",
+          "phoneNumber": phone,
+        }
+      ]
+    });
+
+    try {
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final newUser = User(name: name, phone: phone);
+        setState(() {
+          if (factoryContacts.containsKey(widget.currentFactoryIndex)) {
+            factoryContacts[widget.currentFactoryIndex]!.add(newUser);
+          } else {
+            factoryContacts[widget.currentFactoryIndex] = [newUser];
+          }
+        });
+        Navigator.pop(context);
+      } else {
+        _showErrorDialog('Failed to add user: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showErrorDialog('Error adding user: $e');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
