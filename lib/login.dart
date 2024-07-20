@@ -4,7 +4,6 @@ import 'main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -176,28 +175,30 @@ class _PhoneLoginState extends State<PhoneLogin> {
           ),
           const SizedBox(height: 20),
           SizedBox(
-  height: 50,
-  child: ElevatedButton(
-    onPressed: isChecked
-        ? () {
-            addUser();
-            phoneNumber = phoneController.text.trim();
-            requestOTP(phoneNumber);
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => OTPPage(phoneNumber: phoneNumber)),
-            );
-          }
-        : null,
-    child: const Text(
-      'Get Activation Code',
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.normal,
-      ),
-    ),
-  ),
-),
+            height: 50,
+            child: ElevatedButton(
+              onPressed: isChecked
+                  ? () {
+                      addUser();
+                      phoneNumber = phoneController.text.trim();
+                      requestOTP(phoneNumber);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                OTPPage(phoneNumber: phoneNumber)),
+                      );
+                    }
+                  : null,
+              child: const Text(
+                'Get Activation Code',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -288,7 +289,7 @@ class _OTPPageState extends State<OTPPage> {
   }
 
   void activateUser(String otp) async {
-    final url = Uri.parse('http://10.104.0.248:5001/api/activate');
+    final activationUrl = Uri.parse('http://10.104.0.248:5001/api/activate');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({
       'phone': widget.phoneNumber,
@@ -296,12 +297,11 @@ class _OTPPageState extends State<OTPPage> {
     });
 
     try {
-      final response = await http.post(url, headers: headers, body: body);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const FactoryPage()),
-        );
+      final activationResponse = await http.post(activationUrl, headers: headers, body: body);
+
+      if (activationResponse.statusCode == 200 || activationResponse.statusCode == 201) {
+        // After activation, retrieve the token
+        _getUserToken();
       } else {
         _showErrorDialog('Failed to activate user. Please try again.');
       }
@@ -309,6 +309,49 @@ class _OTPPageState extends State<OTPPage> {
       _showErrorDialog('Error activating user: $e');
     }
   }
+
+  Future<void> _getUserToken() async {
+  final userUrl = Uri.parse('http://10.104.0.248:5001/users/');
+  final headers = {'Content-Type': 'application/json'};
+
+  try {
+    final userResponse = await http.get(userUrl, headers: headers);
+
+    if (userResponse.statusCode == 200) {
+      final responseData = jsonDecode(userResponse.body) as List<dynamic>;
+
+      if (responseData.isNotEmpty) {
+        final user = responseData.firstWhere(
+          (user) => (user as Map<String, dynamic>)['phone'] == widget.phoneNumber,
+          orElse: () => null,
+        ) as Map<String, dynamic>?;
+
+        if (user != null) {
+          final token = user['token'];
+          if (token is String) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FactoryPage(token: token),
+              ),
+            );
+          } else {
+            _showErrorDialog('Expected token to be a String but got ${token.runtimeType}');
+          }
+        } else {
+          _showErrorDialog('No user found with the provided phone number.');
+        }
+      } else {
+        _showErrorDialog('No users found in the response.');
+      }
+    } else {
+      _showErrorDialog('Failed to retrieve token. Status code: ${userResponse.statusCode}');
+    }
+  } catch (e) {
+    _showErrorDialog('Error retrieving token: $e');
+  }
+}
+
 
   void _showErrorDialog(String message) {
     showDialog(

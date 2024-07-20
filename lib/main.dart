@@ -24,7 +24,9 @@ class _MyAppState extends State<MyApp> {
 }
 
 class FactoryPage extends StatefulWidget {
-  const FactoryPage({super.key});
+  final String token;
+
+  const FactoryPage({Key? key, required this.token}) : super(key: key);
 
   @override
   State<FactoryPage> createState() => _FactoryPageState();
