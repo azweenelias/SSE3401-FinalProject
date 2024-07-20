@@ -24,13 +24,13 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Background(
       child: SingleChildScrollView(
-          child: Container(
+        child: Container(
         padding: const EdgeInsets.all(20),
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
         color: Colors.white,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.asset(
@@ -378,24 +378,33 @@ class _OTPPageState extends State<OTPPage> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            color: Colors.white,
+          
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Add your logo here
               Image.asset(
-                "image/upmlogo.jpg", // Replace with your image asset
+                "image/upmlogo.jpg",
+                width: 170,
                 height: 100,
+                fit: BoxFit.contain, // Replace with your image asset
+
               ),
               const SizedBox(height: 20),
               const Text(
                 'Welcome!',
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 50,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -480,16 +489,18 @@ class _OTPPageState extends State<OTPPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  // Handle disclaimer action
-                },
-                child: const Text(
-                  'Disclaimer | Privacy Statement',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    // Handle disclaimer action
+                  },
+                  child: const Text(
+                    'Disclaimer | Privacy Statement',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ),
@@ -501,6 +512,8 @@ class _OTPPageState extends State<OTPPage> {
               ),
             ],
           ),
+          )
+          
         ),
       ),
     );
