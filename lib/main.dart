@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lab5/graph.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'login.dart';
 import 'user.dart';
@@ -18,7 +19,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: LoginPage());
+        debugShowCheckedModeBanner: false, home: GraphView(millID: 'test', paramtype: 'voltage',));
   }
 }
 
