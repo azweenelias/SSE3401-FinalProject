@@ -25,10 +25,9 @@ class _MyAppState extends State<MyApp> {
 }
 
 class FactoryPage extends StatefulWidget {
-  //token from login page
- final String token;
-  const FactoryPage({Key? key, required this.token}) : super(key: key);
+  final String token;
 
+  const FactoryPage({Key? key, required this.token}) : super(key: key);
 
   @override
   State<FactoryPage> createState() => _FactoryPageState();
@@ -304,11 +303,12 @@ class _InvitationPageState extends State<InvitationPage> {
   }
 
   Future<void> addUser(String name, String phone) async {
+    // ignore: prefer_const_declarations
     final String url =
-        'http://10.104.0.248:5001/api/factories/66840cbc5bd189c3098c8510/engineers';
+        'http://10.114.16.240:5000/api/factories/66840cbc5bd189c3098c8510/engineers';
     final headers = {
       'Authorization':
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjgzYjM5ODMzZjI0NDU4YTk0NzUwYjciLCJpYXQiOjE3MTk5MDc2MjYsImV4cCI6MTcyMDUxMjQyNn0.vTYhqP_U-q06txwlHkYkLR8Ws4IJNC37YXXBx-blO-M',
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjljMDdkMjhmMzU0OGZlZjhhNzZjYmYiLCJpYXQiOjE3MjE1MDE3MDcsImV4cCI6MTcyMjEwNjUwN30.7pYpTrrSzjG8JQmyNckA9meUio1GIL3p_XMjBu-MRmE',
       'Content-Type': 'application/json',
     };
     final body = jsonEncode({

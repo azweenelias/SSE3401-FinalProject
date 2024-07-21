@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Background(
       child: SingleChildScrollView(
-        child: Container(
+          child: Container(
         padding: const EdgeInsets.all(20),
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
@@ -211,7 +211,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
       return;
     }
 
-    final url = Uri.parse('http://10.104.0.248:5001/api/register');
+    final url = Uri.parse('http://10.114.16.240:5000/api/register');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({'phone': phoneNumber});
 
@@ -238,7 +238,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
 
   // Function to request OTP from backend
   void requestOTP(String phoneNumber) async {
-    final url = Uri.parse('http://10.104.0.248:5001/api/otp');
+    final url = Uri.parse('http://10.114.16.240:5000/api/otp');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({'phone': phoneNumber});
 
@@ -255,6 +255,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
     }
   }
 }
+
 class OTPPage extends StatefulWidget {
   final String phoneNumber;
 
@@ -289,7 +290,7 @@ class _OTPPageState extends State<OTPPage> {
   }
 
   void activateUser(String otp) async {
-    final activationUrl = Uri.parse('http://10.104.0.248:5001/api/activate');
+    final activationUrl = Uri.parse('http://10.114.16.240:5000/api/activate');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({
       'phone': widget.phoneNumber,
@@ -297,9 +298,11 @@ class _OTPPageState extends State<OTPPage> {
     });
 
     try {
-      final activationResponse = await http.post(activationUrl, headers: headers, body: body);
+      final activationResponse =
+          await http.post(activationUrl, headers: headers, body: body);
 
-      if (activationResponse.statusCode == 200 || activationResponse.statusCode == 201) {
+      if (activationResponse.statusCode == 200 ||
+          activationResponse.statusCode == 201) {
         // After activation, retrieve the token
         _getUserToken();
       } else {
@@ -311,47 +314,49 @@ class _OTPPageState extends State<OTPPage> {
   }
 
   Future<void> _getUserToken() async {
-  final userUrl = Uri.parse('http://10.104.0.248:5001/users/');
-  final headers = {'Content-Type': 'application/json'};
+    final userUrl = Uri.parse('http://10.114.16.240:5000/users/');
+    final headers = {'Content-Type': 'application/json'};
 
-  try {
-    final userResponse = await http.get(userUrl, headers: headers);
+    try {
+      final userResponse = await http.get(userUrl, headers: headers);
 
-    if (userResponse.statusCode == 200) {
-      final responseData = jsonDecode(userResponse.body) as List<dynamic>;
+      if (userResponse.statusCode == 200) {
+        final responseData = jsonDecode(userResponse.body) as List<dynamic>;
 
-      if (responseData.isNotEmpty) {
-        final user = responseData.firstWhere(
-          (user) => (user as Map<String, dynamic>)['phone'] == widget.phoneNumber,
-          orElse: () => null,
-        ) as Map<String, dynamic>?;
+        if (responseData.isNotEmpty) {
+          final user = responseData.firstWhere(
+            (user) =>
+                (user as Map<String, dynamic>)['phone'] == widget.phoneNumber,
+            orElse: () => null,
+          ) as Map<String, dynamic>?;
 
-        if (user != null) {
-          final token = user['token'];
-          if (token is String) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FactoryPage(token: token),
-              ),
-            );
+          if (user != null) {
+            final token = user['token'];
+            if (token is String) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FactoryPage(token: token),
+                ),
+              );
+            } else {
+              _showErrorDialog(
+                  'Expected token to be a String but got ${token.runtimeType}');
+            }
           } else {
-            _showErrorDialog('Expected token to be a String but got ${token.runtimeType}');
+            _showErrorDialog('No user found with the provided phone number.');
           }
         } else {
-          _showErrorDialog('No user found with the provided phone number.');
+          _showErrorDialog('No users found in the response.');
         }
       } else {
-        _showErrorDialog('No users found in the response.');
+        _showErrorDialog(
+            'Failed to retrieve token. Status code: ${userResponse.statusCode}');
       }
-    } else {
-      _showErrorDialog('Failed to retrieve token. Status code: ${userResponse.statusCode}');
+    } catch (e) {
+      _showErrorDialog('Error retrieving token: $e');
     }
-  } catch (e) {
-    _showErrorDialog('Error retrieving token: $e');
   }
-}
-
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -378,12 +383,11 @@ class _OTPPageState extends State<OTPPage> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            color: Colors.white,
-          
+            child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          color: Colors.white,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +398,6 @@ class _OTPPageState extends State<OTPPage> {
                 width: 170,
                 height: 100,
                 fit: BoxFit.contain, // Replace with your image asset
-
               ),
               const SizedBox(height: 20),
               const Text(
@@ -437,7 +440,8 @@ class _OTPPageState extends State<OTPPage> {
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.black.withOpacity(0.6)),
+                          borderSide:
+                              BorderSide(color: Colors.black.withOpacity(0.6)),
                         ),
                         hintText: 'OTP',
                         hintStyle: TextStyle(
@@ -450,7 +454,8 @@ class _OTPPageState extends State<OTPPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Didn\'t receive?', style: TextStyle(fontSize: 16)),
+                        const Text('Didn\'t receive?',
+                            style: TextStyle(fontSize: 16)),
                         TextButton(
                           onPressed: () {
                             // Handle resend OTP
@@ -481,7 +486,8 @@ class _OTPPageState extends State<OTPPage> {
                             : null,
                         child: const Text(
                           'Activate',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.normal),
                         ),
                       ),
                     ),
@@ -512,9 +518,7 @@ class _OTPPageState extends State<OTPPage> {
               ),
             ],
           ),
-          )
-          
-        ),
+        )),
       ),
     );
   }
