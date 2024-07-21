@@ -25,7 +25,9 @@ class _MyAppState extends State<MyApp> {
 }
 
 class FactoryPage extends StatefulWidget {
-  const FactoryPage({super.key});
+  final String token;
+
+  const FactoryPage({Key? key, required this.token}) : super(key: key);
 
   @override
   State<FactoryPage> createState() => _FactoryPageState();
@@ -275,9 +277,6 @@ class _InvitationPageState extends State<InvitationPage> {
   TextEditingController phoneController = TextEditingController();
   bool isSubmitEnabled = false;
 
-  final String bearerToken =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjliNjFlOWJhZGViYzhkNDZkM2RhNmIiLCJpYXQiOjE3MjE0NTkyMTQsImV4cCI6MTcyMjA2NDAxNH0.jZ4Qs_jDXLSRtozS41rIvjLK2LTaDZBOSx4TKPH514k'; // Replace with your actual token
-
   @override
   void dispose() {
     nameController.dispose();
@@ -304,11 +303,13 @@ class _InvitationPageState extends State<InvitationPage> {
   }
 
   Future<void> addUser(String name, String phone) async {
-    const String url =
-        'http://10.114.16.240:5000/api/factories/:factoryId/engineers';
+    // ignore: prefer_const_declarations
+    final String url =
+        'http://10.114.16.240:5000/api/factories/66840cbc5bd189c3098c8510/engineers';
     final headers = {
-      'Authorization': 'Bearer $bearerToken',
-      'Content-Type': 'application/json'
+      'Authorization':
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjljMDdkMjhmMzU0OGZlZjhhNzZjYmYiLCJpYXQiOjE3MjE1MDE3MDcsImV4cCI6MTcyMjEwNjUwN30.7pYpTrrSzjG8JQmyNckA9meUio1GIL3p_XMjBu-MRmE',
+      'Content-Type': 'application/json',
     };
     final body = jsonEncode({
       "engineers": [
@@ -321,12 +322,8 @@ class _InvitationPageState extends State<InvitationPage> {
     });
 
     try {
-      print('Sending request to $url with body: $body');
       final response =
           await http.post(Uri.parse(url), headers: headers, body: body);
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         final newUser = User(name: name, phone: phone);
         setState(() {
@@ -341,7 +338,6 @@ class _InvitationPageState extends State<InvitationPage> {
         _showErrorDialog('Failed to add user: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
       _showErrorDialog('Error adding user: $e');
     }
   }
@@ -371,13 +367,18 @@ class _InvitationPageState extends State<InvitationPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+          ),
           iconSize: 30,
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text('Factory ${widget.currentFactoryIndex}'),
+        title: Text(
+          'Factory ${widget.currentFactoryIndex}',
+        ),
         titleTextStyle: const TextStyle(
             color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
         centerTitle: true,
@@ -394,17 +395,18 @@ class _InvitationPageState extends State<InvitationPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Center(
-                child: Text('Invitation',
-                    style:
-                        TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
-              ),
+                  child: Text('Invitation',
+                      style: TextStyle(
+                          fontSize: 40, fontWeight: FontWeight.bold))),
               const Center(
-                child: Text('Invite user',
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.normal)),
-              ),
+                  child: Text('Invite user',
+                      style: TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.normal))),
               const SizedBox(height: 10),
-              const Text('Owner\'s Name', style: TextStyle(fontSize: 20)),
+              const Text(
+                'Owner\'s Name',
+                style: TextStyle(fontSize: 20),
+              ),
               const SizedBox(height: 10),
               TextField(
                 key: const Key("name"),
@@ -417,8 +419,10 @@ class _InvitationPageState extends State<InvitationPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text("Owner\'s Phone Number",
-                  style: TextStyle(fontSize: 20)),
+              const Text(
+                "Owner\'s Phone Number",
+                style: TextStyle(fontSize: 20),
+              ),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -456,7 +460,10 @@ class _InvitationPageState extends State<InvitationPage> {
                               '+60${phoneController.text}');
                         }
                       : null,
-                  child: const Text("Submit", style: TextStyle(fontSize: 20)),
+                  child: const Text(
+                    "Submit",
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ),
               ),
             ],
