@@ -19,7 +19,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: GraphView(millID: 'test', paramtype: 'voltage',));
+        debugShowCheckedModeBanner: false, home: LoginPage());
   }
 }
 
@@ -69,29 +69,33 @@ class _FactoryPageState extends State<FactoryPage> {
             children: [
               currentIndex == 1
                   ? currentFactoryIndex == 1
-                      ? const FactoryReader(
+                      ? FactoryReader(
                           voltageSensor: 0,
                           readingSteamPressure: 0,
                           readingSteamFlow: 0,
                           readingWaterLevel: 0,
                           readingPowerFrequency: 0,
                           readingDateTime: '--:--',
+                          millID: 'Factory $currentFactoryIndex',
                         )
                       : currentFactoryIndex == 2
-                          ? const FactoryReader(
+                          ? FactoryReader(
                               voltageSensor: 1549.7,
                               readingSteamPressure: 34.19,
                               readingSteamFlow: 22.82,
                               readingWaterLevel: 55.41,
                               readingPowerFrequency: 50.08,
-                              readingDateTime: '2024-04-26 13:45:25')
-                          : const FactoryReader(
+                              readingDateTime: '2024-04-26 13:45:25',
+                              millID: 'Factory $currentFactoryIndex',
+                            )
+                          : FactoryReader(
                               voltageSensor: 0,
                               readingSteamPressure: 0,
                               readingSteamFlow: 0,
                               readingWaterLevel: 0,
                               readingPowerFrequency: 0,
                               readingDateTime: '--:--',
+                              millID: 'Factory $currentFactoryIndex',
                             )
                   : currentIndex == 2
                       ? const ThresholdSection()
@@ -421,6 +425,7 @@ class FactoryReader extends StatefulWidget {
   final double readingWaterLevel;
   final double readingPowerFrequency;
   final String readingDateTime;
+  final String millID;
 
   const FactoryReader({
     Key? key,
@@ -430,6 +435,7 @@ class FactoryReader extends StatefulWidget {
     required this.readingWaterLevel,
     required this.readingPowerFrequency,
     required this.readingDateTime,
+    required this.millID,
   }) : super(key: key);
 
   @override
@@ -466,25 +472,49 @@ class _FactoryReaderState extends State<FactoryReader> {
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 _buildGaugeContainer(
-                  title: 'Steam Pressure',
-                  value: widget.readingSteamPressure,
-                  unit: 'bar',
-                ),
+                    title: 'Steam Pressure', ///change this into a variable
+                    value: widget.readingSteamPressure,
+                    unit: 'bar',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GraphView(
+                                  millID: widget.millID, paramtype: 'Steam Pressure')));
+                    }),
                 _buildGaugeContainer(
-                  title: 'Steam Flow',
-                  value: widget.readingSteamFlow,
-                  unit: 'T/H',
-                ),
+                    title: 'Steam Flow',
+                    value: widget.readingSteamFlow,
+                    unit: 'T/H',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GraphView(
+                                  millID: widget.millID, paramtype: 'Steam Flow')));
+                    }),
                 _buildGaugeContainer(
-                  title: 'Water Level',
-                  value: widget.readingWaterLevel,
-                  unit: '%',
-                ),
+                    title: 'Water Level',
+                    value: widget.readingWaterLevel,
+                    unit: '%',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GraphView(
+                                  millID: widget.millID, paramtype: 'Water Level')));
+                    }),
                 _buildGaugeContainer(
-                  title: 'Power Frequency',
-                  value: widget.readingPowerFrequency,
-                  unit: 'Hz',
-                ),
+                    title: 'Power Frequency',
+                    value: widget.readingPowerFrequency,
+                    unit: 'Hz',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GraphView(
+                                  millID: widget.millID, paramtype: 'Power Frequency')));
+                    }),
               ],
             ),
             const SizedBox(height: 20),
@@ -502,75 +532,81 @@ class _FactoryReaderState extends State<FactoryReader> {
   }
 
   Widget _buildGaugeContainer(
-      {required String title, required double value, required String unit}) {
-    return Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: Colors.white,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            FittedBox(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.grey[600],
+      {required String title,
+      required double value,
+      required String unit,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              FittedBox(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.grey[600],
+                  ),
                 ),
               ),
-            ),
-            Container(
-              height: 100,
-              width: 100,
-              padding: const EdgeInsets.all(10),
-              child: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  return SfRadialGauge(
-                    axes: <RadialAxis>[
-                      RadialAxis(
-                        minimum: 0,
-                        maximum: 100,
-                        showLabels: false,
-                        showTicks: true,
-                        startAngle: 180,
-                        endAngle: 0,
-                        radiusFactor: 1.5,
-                        canScaleToFit: true,
-                        axisLineStyle: const AxisLineStyle(
-                          thickness: 0.3,
-                          thicknessUnit: GaugeSizeUnit.factor,
-                        ),
-                        pointers: <GaugePointer>[
-                          RangePointer(
-                            value: value,
-                            color: value < 31 ? Colors.red : Colors.green,
-                            width: 0.3,
-                            sizeUnit: GaugeSizeUnit.factor,
+              Container(
+                height: 100,
+                width: 100,
+                padding: const EdgeInsets.all(10),
+                child: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    return SfRadialGauge(
+                      axes: <RadialAxis>[
+                        RadialAxis(
+                          minimum: 0,
+                          maximum: 100,
+                          showLabels: false,
+                          showTicks: true,
+                          startAngle: 180,
+                          endAngle: 0,
+                          radiusFactor: 1.5,
+                          canScaleToFit: true,
+                          axisLineStyle: const AxisLineStyle(
+                            thickness: 0.3,
+                            thicknessUnit: GaugeSizeUnit.factor,
                           ),
-                        ],
-                        annotations: <GaugeAnnotation>[
-                          GaugeAnnotation(
-                            widget: Text(
-                              '$value $unit',
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          pointers: <GaugePointer>[
+                            RangePointer(
+                              value: value,
+                              color: value < 31 ? Colors.red : Colors.green,
+                              width: 0.3,
+                              sizeUnit: GaugeSizeUnit.factor,
                             ),
-                            angle: 90,
-                            positionFactor: 0.4,
-                          ),
-                        ],
-                      )
-                    ],
-                  );
-                },
+                          ],
+                          annotations: <GaugeAnnotation>[
+                            GaugeAnnotation(
+                              widget: Text(
+                                '$value $unit',
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              angle: 90,
+                              positionFactor: 0.4,
+                            ),
+                          ],
+                        )
+                      ],
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
