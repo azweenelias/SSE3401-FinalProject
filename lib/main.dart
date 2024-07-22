@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:lab5/graph.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
@@ -212,6 +214,9 @@ class ContactSection extends StatefulWidget {
 class _ContactSectionState extends State<ContactSection> {
   @override
   Widget build(BuildContext context) {
+    List<User> usersForFactory =
+        factoryContacts[widget.currentFactoryIndex] ?? [];
+
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.9,
       height: MediaQuery.of(context).size.height * 0.56,
@@ -224,8 +229,7 @@ class _ContactSectionState extends State<ContactSection> {
                 color: Colors.grey[100],
               ),
               child: ListView.builder(
-                itemCount: users.length,
-                //
+                itemCount: usersForFactory.length,
                 itemBuilder: (context, index) {
                   return Card(
                     color: Colors.blueGrey[100],
@@ -233,8 +237,8 @@ class _ContactSectionState extends State<ContactSection> {
                     child: ListTile(
                       leading: const Icon(Icons.circle,
                           size: 20, color: Colors.grey),
-                      title: Text(users[index].name),
-                      subtitle: Text(users[index].phone),
+                      title: Text(usersForFactory[index].name),
+                      subtitle: Text(usersForFactory[index].phone),
                     ),
                   );
                 },
@@ -276,6 +280,9 @@ class _InvitationPageState extends State<InvitationPage> {
   TextEditingController phoneController = TextEditingController();
   bool isSubmitEnabled = false;
 
+  final String bearerToken =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjliNjFlOWJhZGViYzhkNDZkM2RhNmIiLCJpYXQiOjE3MjE0NTkyMTQsImV4cCI6MTcyMjA2NDAxNH0.jZ4Qs_jDXLSRtozS41rIvjLK2LTaDZBOSx4TKPH514k'; // Replace with your actual token
+
   @override
   void dispose() {
     nameController.dispose();
@@ -285,7 +292,6 @@ class _InvitationPageState extends State<InvitationPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     nameController.addListener(() {
       _checkSubmitButton();
@@ -302,8 +308,67 @@ class _InvitationPageState extends State<InvitationPage> {
     });
   }
 
-  void addUser(String name, String phone) {
-    users.add(User(name: name, phone: phone));
+  Future<void> addUser(String name, String phone) async {
+    const String url =
+        'http://10.114.16.240:5000/api/factories/:factoryId/engineers';
+    final headers = {
+      'Authorization': 'Bearer $bearerToken',
+      'Content-Type': 'application/json'
+    };
+    final body = jsonEncode({
+      "engineers": [
+        {
+          "name": name,
+          "specialization": "Normal Engineer",
+          "phoneNumber": phone,
+        }
+      ]
+    });
+
+    try {
+      print('Sending request to $url with body: $body');
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: body);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final newUser = User(name: name, phone: phone);
+        setState(() {
+          if (factoryContacts.containsKey(widget.currentFactoryIndex)) {
+            factoryContacts[widget.currentFactoryIndex]!.add(newUser);
+          } else {
+            factoryContacts[widget.currentFactoryIndex] = [newUser];
+          }
+        });
+        Navigator.pop(context);
+      } else {
+        _showErrorDialog('Failed to add user: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      _showErrorDialog('Error adding user: $e');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -311,18 +376,13 @@ class _InvitationPageState extends State<InvitationPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-          ),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           iconSize: 30,
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text(
-          'Factory ${widget.currentFactoryIndex}',
-        ),
+        title: Text('Factory ${widget.currentFactoryIndex}'),
         titleTextStyle: const TextStyle(
             color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
         centerTitle: true,
@@ -339,18 +399,17 @@ class _InvitationPageState extends State<InvitationPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Center(
-                  child: Text('Invitation',
-                      style: TextStyle(
-                          fontSize: 40, fontWeight: FontWeight.bold))),
-              const Center(
-                  child: Text('Invite user',
-                      style: TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.normal))),
-              const SizedBox(height: 10),
-              const Text(
-                'Owner\'s Name',
-                style: TextStyle(fontSize: 20),
+                child: Text('Invitation',
+                    style:
+                        TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
               ),
+              const Center(
+                child: Text('Invite user',
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.normal)),
+              ),
+              const SizedBox(height: 10),
+              const Text('Owner\'s Name', style: TextStyle(fontSize: 20)),
               const SizedBox(height: 10),
               TextField(
                 key: const Key("name"),
@@ -363,10 +422,8 @@ class _InvitationPageState extends State<InvitationPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                "Owner\'s Phone Number",
-                style: TextStyle(fontSize: 20),
-              ),
+              const Text("Owner\'s Phone Number",
+                  style: TextStyle(fontSize: 20)),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -404,10 +461,7 @@ class _InvitationPageState extends State<InvitationPage> {
                               '+60${phoneController.text}');
                         }
                       : null,
-                  child: const Text(
-                    "Submit",
-                    style: TextStyle(fontSize: 20),
-                  ),
+                  child: const Text("Submit", style: TextStyle(fontSize: 20)),
                 ),
               ),
             ],

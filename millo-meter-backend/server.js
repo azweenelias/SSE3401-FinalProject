@@ -323,31 +323,30 @@ app.post("/api/thresholds", authMiddleware, async (req, res) => {
 });
 
 // Example to add engineers to a factory
-app.post(
-  "/api/factories/:factoryId/engineers",
-  authMiddleware,
-  async (req, res) => {
-    const { factoryId } = req.params;
-    const { engineers } = req.body;
+app.post("/api/factories/:factoryId/engineers", async (req, res) => {
+  const { factoryId } = req.params;
+  const { engineers } = req.body;
 
-    try {
-      const factory = await Factory.findById(factoryId);
-      if (!factory) {
-        return res.status(404).json({ message: "Factory not found" });
-      }
+  console.log(`Received request to add engineers: ${JSON.stringify(engineers)} to factory: ${factoryId}`);
 
-      // Add engineers to the factory
-      factory.engineers.push(...engineers);
-      await factory.save();
-
-      res
-        .status(200)
-        .json({ message: "Engineers added successfully", factory });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+  try {
+    const factory = await Factory.findById(factoryId);
+    if (!factory) {
+      console.log("Factory not found");
+      return res.status(404).json({ message: "Factory not found" });
     }
+
+    // Add engineers to the factory
+    factory.engineers.push(...engineers);
+    await factory.save();
+
+    res.status(200).json({ message: "Engineers added successfully", factory });
+  } catch (err) {
+    console.log(`Error adding engineers: ${err.message}`);
+    res.status(500).json({ message: err.message });
   }
-);
+});
+
 
 // GET all engineers for a specific factory
 app.get("/api/engineers/:factoryId", async (req, res) => {
