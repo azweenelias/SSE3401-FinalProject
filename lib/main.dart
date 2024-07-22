@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as status;
 import 'login.dart';
 import 'user.dart';
 
@@ -21,6 +24,7 @@ class _MyAppState extends State<MyApp> {
         debugShowCheckedModeBanner: false, home: LoginPage());
   }
 }
+
 
 class FactoryPage extends StatefulWidget {
   const FactoryPage({super.key});
@@ -68,30 +72,10 @@ class _FactoryPageState extends State<FactoryPage> {
             children: [
               currentIndex == 1
                   ? currentFactoryIndex == 1
-                      ? const FactoryReader(
-                          voltageSensor: 0,
-                          readingSteamPressure: 0,
-                          readingSteamFlow: 0,
-                          readingWaterLevel: 0,
-                          readingPowerFrequency: 0,
-                          readingDateTime: '--:--',
-                        )
+                      ? const FactoryReader()
                       : currentFactoryIndex == 2
-                          ? const FactoryReader(
-                              voltageSensor: 1549.7,
-                              readingSteamPressure: 34.19,
-                              readingSteamFlow: 22.82,
-                              readingWaterLevel: 55.41,
-                              readingPowerFrequency: 50.08,
-                              readingDateTime: '2024-04-26 13:45:25')
-                          : const FactoryReader(
-                              voltageSensor: 0,
-                              readingSteamPressure: 0,
-                              readingSteamFlow: 0,
-                              readingWaterLevel: 0,
-                              readingPowerFrequency: 0,
-                              readingDateTime: '--:--',
-                            )
+                          ? const FactoryReader()
+                          : const FactoryReader()
                   : currentIndex == 2
                       ? const ThresholdSection()
                       : currentIndex == 0
@@ -414,28 +398,72 @@ class _InvitationPageState extends State<InvitationPage> {
 }
 
 class FactoryReader extends StatefulWidget {
-  final double voltageSensor;
-  final double readingSteamPressure;
-  final double readingSteamFlow;
-  final double readingWaterLevel;
-  final double readingPowerFrequency;
-  final String readingDateTime;
-
-  const FactoryReader({
-    Key? key,
-    required this.voltageSensor,
-    required this.readingSteamPressure,
-    required this.readingSteamFlow,
-    required this.readingWaterLevel,
-    required this.readingPowerFrequency,
-    required this.readingDateTime,
-  }) : super(key: key);
+  const FactoryReader({super.key});
 
   @override
   State<FactoryReader> createState() => _FactoryReaderState();
 }
 
 class _FactoryReaderState extends State<FactoryReader> {
+  late WebSocketChannel channel;
+  late Stream stream;
+  String connectionMessage = 'Connecting...';
+
+  double voltageSensor = 0.0;
+  double readingSteamPressure = 0.0;
+  double readingSteamFlow = 0.0;
+  double readingWaterLevel = 0.0;
+  double readingPowerFrequency = 0.0;
+  String readingDateTime = '--:--';
+
+  @override
+  void initState() {
+    super.initState();
+    connectWebSocket();
+  }
+
+  void connectWebSocket() {
+    channel = WebSocketChannel.connect(
+      Uri.parse('ws://123.253.32.26:4000/?piid='),
+    );
+
+    stream = channel.stream;
+
+    channel.stream.listen(
+      (message) {
+        setState(() {
+          updateSensorData(message);
+        });
+      },
+      onDone: () {
+        setState(() {
+          connectionMessage = 'Controller is unreachable';
+        });
+      },
+      onError: (error) {
+        setState(() {
+          connectionMessage = 'Error connecting to controller';
+        });
+      },
+    );
+  }
+
+  void updateSensorData(String message) {
+    Map<String, dynamic> data = jsonDecode(message);
+    voltageSensor = data['voltageSensor'];
+    readingSteamPressure = data['readingSteamPressure'];
+    readingSteamFlow = data['readingSteamFlow'];
+    readingWaterLevel = data['readingWaterLevel'];
+    readingPowerFrequency = data['readingPowerFrequency'];
+    readingDateTime = data['readingDateTime'];
+  }
+
+  @override
+  void dispose() {
+    channel.sink.close(status.normalClosure);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -450,9 +478,7 @@ class _FactoryReaderState extends State<FactoryReader> {
         child: Column(
           children: [
             Text(
-              widget.voltageSensor == 0
-                  ? 'ABD1234 IS UNREACHABLE'
-                  : '${widget.voltageSensor} kW',
+              voltageSensor == 0 ? connectionMessage : '$voltageSensor kW',
               style: const TextStyle(
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
@@ -466,29 +492,29 @@ class _FactoryReaderState extends State<FactoryReader> {
               children: [
                 _buildGaugeContainer(
                   title: 'Steam Pressure',
-                  value: widget.readingSteamPressure,
+                  value: readingSteamPressure,
                   unit: 'bar',
                 ),
                 _buildGaugeContainer(
                   title: 'Steam Flow',
-                  value: widget.readingSteamFlow,
+                  value: readingSteamFlow,
                   unit: 'T/H',
                 ),
                 _buildGaugeContainer(
                   title: 'Water Level',
-                  value: widget.readingWaterLevel,
+                  value: readingWaterLevel,
                   unit: '%',
                 ),
                 _buildGaugeContainer(
                   title: 'Power Frequency',
-                  value: widget.readingPowerFrequency,
+                  value: readingPowerFrequency,
                   unit: 'Hz',
                 ),
               ],
             ),
             const SizedBox(height: 20),
             Text(
-              widget.readingDateTime,
+              readingDateTime,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.normal,
@@ -698,3 +724,15 @@ class ThresholdSection extends StatelessWidget {
     );
   }
 }
+
+class User {
+  final String name;
+  final String phone;
+
+  User({required this.name, required this.phone});
+}
+
+List<User> users = [
+  User(name: 'John Doe', phone: '+60123456789'),
+  User(name: 'Jane Smith', phone: '+60198765432'),
+];
