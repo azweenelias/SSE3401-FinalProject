@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/status.dart' as status;
 import 'login.dart';
 import 'user.dart';
+import 'mock_websocket_server.dart'; 
 
 void main() {
+  startWebSocketServer();
   runApp(const MyApp());
 }
 
@@ -36,6 +37,43 @@ class FactoryPage extends StatefulWidget {
 class _FactoryPageState extends State<FactoryPage> {
   int currentIndex = 0;
   int currentFactoryIndex = 1;
+  final channel = WebSocketChannel.connect(Uri.parse('ws://localhost:8080'));
+
+  double voltageSensor = 0;
+  double readingSteamPressure = 0;
+  double readingSteamFlow = 0;
+  double readingWaterLevel = 0;
+  double readingPowerFrequency = 0;
+  String readingDateTime = '--:--';
+
+  @override
+  void initState() {
+    super.initState();
+    channel.stream.listen((data) {
+      final List<dynamic> factoryData = jsonDecode(data);
+      final sensorData = factoryData.firstWhere(
+        (element) => element['factoryId'] == currentFactoryIndex,
+        orElse: () => null,
+      );
+
+      if (sensorData != null) {
+        setState(() {
+          voltageSensor = double.tryParse(sensorData['voltageSensor']) ?? 0;
+          readingSteamPressure = double.tryParse(sensorData['readingSteamPressure']) ?? 0;
+          readingSteamFlow = double.tryParse(sensorData['readingSteamFlow']) ?? 0;
+          readingWaterLevel = double.tryParse(sensorData['readingWaterLevel']) ?? 0;
+          readingPowerFrequency = double.tryParse(sensorData['readingPowerFrequency']) ?? 0;
+          readingDateTime = sensorData['readingDateTime'];
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    channel.sink.close();
+    super.dispose();
+  }
 
   void changeFactoryIndex(int factoryNumber) {
     setState(() {
@@ -48,12 +86,12 @@ class _FactoryPageState extends State<FactoryPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Factory $currentFactoryIndex'),
-        titleTextStyle: const TextStyle(
-            color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(
+          color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: Icon(Icons.settings),
             iconSize: 30,
             onPressed: () {
               // Add your logic here
@@ -71,11 +109,23 @@ class _FactoryPageState extends State<FactoryPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               currentIndex == 1
-                  ? currentFactoryIndex == 1
-                      ? const FactoryReader()
-                      : currentFactoryIndex == 2
-                          ? const FactoryReader()
-                          : const FactoryReader()
+                  ? (currentFactoryIndex == 1
+                      ? const FactoryReader(
+                          voltageSensor: 0,
+                          readingSteamPressure: 0,
+                          readingSteamFlow: 0,
+                          readingWaterLevel: 0,
+                          readingPowerFrequency: 0,
+                          readingDateTime: '--:--',
+                        )
+                      : FactoryReader(
+                          voltageSensor: voltageSensor,
+                          readingSteamPressure: readingSteamPressure,
+                          readingSteamFlow: readingSteamFlow,
+                          readingWaterLevel: readingWaterLevel,
+                          readingPowerFrequency: readingPowerFrequency,
+                          readingDateTime: readingDateTime,
+                        ))
                   : currentIndex == 2
                       ? const ThresholdSection()
                       : currentIndex == 0
@@ -94,19 +144,19 @@ class _FactoryPageState extends State<FactoryPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       FactoryButton(
-                        key: const Key("factory1"),
+                        key: Key("factory1"),
                         factoryNumber: 1,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
-                      const SizedBox(width: 15),
+                      SizedBox(width: 15),
                       FactoryButton(
-                        key: const Key("factory2"),
+                        key: Key("factory2"),
                         factoryNumber: 2,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
-                      const SizedBox(width: 15),
+                      SizedBox(width: 15),
                       FactoryButton(
-                        key: const Key("factory3"),
+                        key: Key("factory3"),
                         factoryNumber: 3,
                         changeFactoryIndex: changeFactoryIndex,
                       ),
@@ -121,13 +171,9 @@ class _FactoryPageState extends State<FactoryPage> {
       bottomNavigationBar: BottomNavigationBar(
         selectedFontSize: 0,
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outlined, key: Key("person_icon")),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home, key: Key("home_icon")), label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings, key: Key("settings_icon")), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outlined, key: Key("person_icon")), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.home, key: Key("home_icon")), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.settings, key: Key("settings_icon")), label: ''),
         ],
         currentIndex: currentIndex,
         onTap: (int index) {
@@ -398,72 +444,29 @@ class _InvitationPageState extends State<InvitationPage> {
 }
 
 class FactoryReader extends StatefulWidget {
-  const FactoryReader({super.key});
+  final double voltageSensor;
+  final double readingSteamPressure;
+  final double readingSteamFlow;
+  final double readingWaterLevel;
+  final double readingPowerFrequency;
+  final String readingDateTime;
+  
+
+  const FactoryReader({
+    Key? key,
+    required this.voltageSensor,
+    required this.readingSteamPressure,
+    required this.readingSteamFlow,
+    required this.readingWaterLevel,
+    required this.readingPowerFrequency,
+    required this.readingDateTime,
+  }) : super(key: key);
 
   @override
   State<FactoryReader> createState() => _FactoryReaderState();
 }
 
 class _FactoryReaderState extends State<FactoryReader> {
-  late WebSocketChannel channel;
-  late Stream stream;
-  String connectionMessage = 'Connecting...';
-
-  double voltageSensor = 0.0;
-  double readingSteamPressure = 0.0;
-  double readingSteamFlow = 0.0;
-  double readingWaterLevel = 0.0;
-  double readingPowerFrequency = 0.0;
-  String readingDateTime = '--:--';
-
-  @override
-  void initState() {
-    super.initState();
-    connectWebSocket();
-  }
-
-  void connectWebSocket() {
-    channel = WebSocketChannel.connect(
-      Uri.parse('ws://123.253.32.26:4000/?piid='),
-    );
-
-    stream = channel.stream;
-
-    channel.stream.listen(
-      (message) {
-        setState(() {
-          updateSensorData(message);
-        });
-      },
-      onDone: () {
-        setState(() {
-          connectionMessage = 'Controller is unreachable';
-        });
-      },
-      onError: (error) {
-        setState(() {
-          connectionMessage = 'Error connecting to controller';
-        });
-      },
-    );
-  }
-
-  void updateSensorData(String message) {
-    Map<String, dynamic> data = jsonDecode(message);
-    voltageSensor = data['voltageSensor'];
-    readingSteamPressure = data['readingSteamPressure'];
-    readingSteamFlow = data['readingSteamFlow'];
-    readingWaterLevel = data['readingWaterLevel'];
-    readingPowerFrequency = data['readingPowerFrequency'];
-    readingDateTime = data['readingDateTime'];
-  }
-
-  @override
-  void dispose() {
-    channel.sink.close(status.normalClosure);
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -478,44 +481,48 @@ class _FactoryReaderState extends State<FactoryReader> {
         child: Column(
           children: [
             Text(
-              voltageSensor == 0 ? connectionMessage : '$voltageSensor kW',
-              style: const TextStyle(
+              widget.voltageSensor == 0
+                  ? 'ABD1234 IS UNREACHABLE'
+                  : '${widget.voltageSensor} kW',
+              style: TextStyle(
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 10),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                _buildGaugeContainer(
-                  title: 'Steam Pressure',
-                  value: readingSteamPressure,
-                  unit: 'bar',
-                ),
-                _buildGaugeContainer(
-                  title: 'Steam Flow',
-                  value: readingSteamFlow,
-                  unit: 'T/H',
-                ),
-                _buildGaugeContainer(
-                  title: 'Water Level',
-                  value: readingWaterLevel,
-                  unit: '%',
-                ),
-                _buildGaugeContainer(
-                  title: 'Power Frequency',
-                  value: readingPowerFrequency,
-                  unit: 'Hz',
-                ),
-              ],
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                children: [
+                  _buildGaugeContainer(
+                    title: 'Steam Pressure',
+                    value: widget.readingSteamPressure,
+                    unit: 'bar',
+                  ),
+                  _buildGaugeContainer(
+                    title: 'Steam Flow',
+                    value: widget.readingSteamFlow,
+                    unit: 'T/H',
+                  ),
+                  _buildGaugeContainer(
+                    title: 'Water Level',
+                    value: widget.readingWaterLevel,
+                    unit: '%',
+                  ),
+                  _buildGaugeContainer(
+                    title: 'Power Frequency',
+                    value: widget.readingPowerFrequency,
+                    unit: 'Hz',
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Text(
-              readingDateTime,
-              style: const TextStyle(
+              widget.readingDateTime,
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.normal,
               ),
@@ -526,8 +533,11 @@ class _FactoryReaderState extends State<FactoryReader> {
     );
   }
 
-  Widget _buildGaugeContainer(
-      {required String title, required double value, required String unit}) {
+  Widget _buildGaugeContainer({
+    required String title,
+    required double value,
+    required String unit,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Container(
@@ -543,6 +553,7 @@ class _FactoryReaderState extends State<FactoryReader> {
                 title,
                 style: TextStyle(
                   fontSize: 20,
+                  fontWeight: FontWeight.bold,
                   color: Colors.grey[600],
                 ),
               ),
@@ -551,7 +562,8 @@ class _FactoryReaderState extends State<FactoryReader> {
               height: 100,
               width: 100,
               padding: const EdgeInsets.all(10),
-              child: LayoutBuilder(
+              child: 
+              LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
                   return SfRadialGauge(
                     axes: <RadialAxis>[
@@ -564,7 +576,7 @@ class _FactoryReaderState extends State<FactoryReader> {
                         endAngle: 0,
                         radiusFactor: 1.5,
                         canScaleToFit: true,
-                        axisLineStyle: const AxisLineStyle(
+                        axisLineStyle: AxisLineStyle(
                           thickness: 0.3,
                           thicknessUnit: GaugeSizeUnit.factor,
                         ),
@@ -580,7 +592,7 @@ class _FactoryReaderState extends State<FactoryReader> {
                           GaugeAnnotation(
                             widget: Text(
                               '$value $unit',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -589,10 +601,10 @@ class _FactoryReaderState extends State<FactoryReader> {
                             positionFactor: 0.4,
                           ),
                         ],
-                      )
+                      ),
                     ],
                   );
-                },
+                }
               ),
             ),
           ],
