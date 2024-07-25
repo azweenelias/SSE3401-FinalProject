@@ -4,6 +4,12 @@ import 'main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+//window user
+const String localhost = '10.106.18.110:5000';
+
+//mac user
+//const String localhost = '10.104.0.248:5001';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -211,7 +217,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
       return;
     }
 
-    final url = Uri.parse('http://10.104.0.248:5001/api/register');
+    final url = Uri.parse('http://$localhost/api/register');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({'phone': phoneNumber});
 
@@ -238,7 +244,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
 
   // Function to request OTP from backend
   void requestOTP(String phoneNumber) async {
-    final url = Uri.parse('http://10.104.0.248:5001/api/otp');
+    final url = Uri.parse('http://$localhost/api/otp');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({'phone': phoneNumber});
 
@@ -290,7 +296,7 @@ class _OTPPageState extends State<OTPPage> {
   }
 
   void activateUser(String otp) async {
-    final activationUrl = Uri.parse('http://10.104.0.248:5001/api/activate');
+    final activationUrl = Uri.parse('http://$localhost/api/activate');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({
       'phone': widget.phoneNumber,
@@ -314,7 +320,7 @@ class _OTPPageState extends State<OTPPage> {
   }
 
   Future<void> _getUserToken() async {
-    final userUrl = Uri.parse('http://10.104.0.248:5001/users/');
+    final userUrl = Uri.parse('http://$localhost/users/');
     final headers = {'Content-Type': 'application/json'};
 
     try {

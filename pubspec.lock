@@ -97,10 +97,10 @@ packages:
     dependency: "direct main"
     description:
       name: http
-      sha256: "761a297c042deedc1ffbb156d6e2af13886bb305c2a343a4d972504cd67dd938"
+      sha256: b9c29a161230ee03d3ccf545097fccd9b87a5264228c5d348202e0f0c28f9010
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "1.2.2"
   http_parser:
     dependency: transitive
     description:
@@ -118,10 +118,10 @@ packages:
     dependency: "direct main"
     description:
       name: intl
-      sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
       url: "https://pub.dev"
     source: hosted
-    version: "0.18.1"
+    version: "0.19.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -259,7 +259,7 @@ packages:
     dependency: transitive
     description:
       name: syncfusion_flutter_core
-      sha256: "87cbeee9b916e013eedbd43bf07f253c34dd5184c88325e5227434e0f8b89a68"
+      sha256: e17dcc7a1d0701e84d0a83c0040503cdcc6c72e44db0d733ab4c706dd5b8b9f8
       url: "https://pub.dev"
     source: hosted
     version: "25.2.7"
@@ -275,10 +275,10 @@ packages:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_gauges
-      sha256: "1b3d61ea1727b4b56730b431f077ef770ad15da6a0ddcd6df29f8a6f521b8797"
+      sha256: b9fdecf3dd9de516cbb3a3daad35663bea30a145229bf0cbf64b61b8411358aa
       url: "https://pub.dev"
     source: hosted
-    version: "26.1.40"
+    version: "25.2.7"
   term_glyph:
     dependency: transitive
     description:
@@ -336,5 +336,5 @@ packages:
     source: hosted
     version: "3.0.3"
 sdks:
-  dart: ">=3.4.0 <4.0.0"
+  dart: ">=3.3.0 <4.0.0"
   flutter: ">=3.18.0-18.0.pre.54"

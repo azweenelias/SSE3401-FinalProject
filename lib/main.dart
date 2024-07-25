@@ -282,9 +282,6 @@ class _InvitationPageState extends State<InvitationPage> {
   TextEditingController phoneController = TextEditingController();
   bool isSubmitEnabled = false;
 
-  final String bearerToken =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjliNjFlOWJhZGViYzhkNDZkM2RhNmIiLCJpYXQiOjE3MjE0NTkyMTQsImV4cCI6MTcyMjA2NDAxNH0.jZ4Qs_jDXLSRtozS41rIvjLK2LTaDZBOSx4TKPH514k'; // Replace with your actual token
-
   @override
   void dispose() {
     nameController.dispose();
@@ -314,9 +311,12 @@ class _InvitationPageState extends State<InvitationPage> {
     // ignore: prefer_const_declarations
     final String url =
         'http://10.104.0.248:5001/api/factories/66840cbc5bd189c3098c8510/engineers';
+    const String bearerToken =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjljMDdkMjhmMzU0OGZlZjhhNzZjYmYiLCJpYXQiOjE3MjE1MDE3MDcsImV4cCI6MTcyMjEwNjUwN30.7pYpTrrSzjG8JQmyNckA9meUio1GIL3p_XMjBu-MRmE';
+
     final headers = {
       'Authorization':
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjljMDdkMjhmMzU0OGZlZjhhNzZjYmYiLCJpYXQiOjE3MjE1MDE3MDcsImV4cCI6MTcyMjEwNjUwN30.7pYpTrrSzjG8JQmyNckA9meUio1GIL3p_XMjBu-MRmE',
+          'Bearer $bearerToken',
       'Content-Type': 'application/json',
     };
     final body = jsonEncode({
