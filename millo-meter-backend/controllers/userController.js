@@ -25,10 +25,10 @@ exports.getUserById = async (req, res) => {
 
 // Create a new user
 exports.createUser = async (req, res) => {
-  const { name, phone } = req.body;
+  const { phone } = req.body;
 
   try {
-    const newUser = new User({ name, phone });
+    const newUser = new User({ phone }); // Only include phone
     await newUser.save();
     res.status(201).json(newUser);
   } catch (err) {
@@ -67,3 +67,8 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
+
+

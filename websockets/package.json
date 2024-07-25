@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "systeminformation": "^5.22.11",
+    "ws": "^8.18.0"
+  }
+}

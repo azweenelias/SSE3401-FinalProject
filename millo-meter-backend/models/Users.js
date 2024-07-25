@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: false },
   phone: { type: String, required: true, unique: true },
   otp: { type: String }, // Field to store OTP
   isActive: { type: Boolean, default: false },

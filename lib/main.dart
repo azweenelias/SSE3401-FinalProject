@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:lab5/graph.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'login.dart';
@@ -28,7 +30,9 @@ class _MyAppState extends State<MyApp> {
 
 
 class FactoryPage extends StatefulWidget {
-  const FactoryPage({super.key});
+  final String token;
+
+  const FactoryPage({Key? key, required this.token}) : super(key: key);
 
   @override
   State<FactoryPage> createState() => _FactoryPageState();
@@ -110,6 +114,7 @@ class _FactoryPageState extends State<FactoryPage> {
             children: [
               currentIndex == 1
                   ? (currentFactoryIndex == 1
+                     //const from azween
                       ? const FactoryReader(
                           voltageSensor: 0,
                           readingSteamPressure: 0,
@@ -117,6 +122,7 @@ class _FactoryPageState extends State<FactoryPage> {
                           readingWaterLevel: 0,
                           readingPowerFrequency: 0,
                           readingDateTime: '--:--',
+                          millID: 'Factory $currentFactoryIndex',
                         )
                       : FactoryReader(
                           voltageSensor: voltageSensor,
@@ -126,6 +132,27 @@ class _FactoryPageState extends State<FactoryPage> {
                           readingPowerFrequency: readingPowerFrequency,
                           readingDateTime: readingDateTime,
                         ))
+           
+                     /* Mock Testing above
+                      : currentFactoryIndex == 2
+                          ? FactoryReader(
+                              voltageSensor: 1549.7,
+                              readingSteamPressure: 34.19,
+                              readingSteamFlow: 22.82,
+                              readingWaterLevel: 55.41,
+                              readingPowerFrequency: 50.08,
+                              readingDateTime: '2024-04-26 13:45:25',
+                              millID: 'Factory $currentFactoryIndex',
+                            )
+                          : FactoryReader(
+                              voltageSensor: 0,
+                              readingSteamPressure: 0,
+                              readingSteamFlow: 0,
+                              readingWaterLevel: 0,
+                              readingPowerFrequency: 0,
+                              readingDateTime: '--:--',
+                              millID: 'Factory $currentFactoryIndex',
+                            )*/
                   : currentIndex == 2
                       ? const ThresholdSection()
                       : currentIndex == 0
@@ -237,6 +264,9 @@ class ContactSection extends StatefulWidget {
 class _ContactSectionState extends State<ContactSection> {
   @override
   Widget build(BuildContext context) {
+    List<User> usersForFactory =
+        factoryContacts[widget.currentFactoryIndex] ?? [];
+
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.9,
       height: MediaQuery.of(context).size.height * 0.56,
@@ -249,8 +279,7 @@ class _ContactSectionState extends State<ContactSection> {
                 color: Colors.grey[100],
               ),
               child: ListView.builder(
-                itemCount: users.length,
-                //
+                itemCount: usersForFactory.length,
                 itemBuilder: (context, index) {
                   return Card(
                     color: Colors.blueGrey[100],
@@ -258,8 +287,8 @@ class _ContactSectionState extends State<ContactSection> {
                     child: ListTile(
                       leading: const Icon(Icons.circle,
                           size: 20, color: Colors.grey),
-                      title: Text(users[index].name),
-                      subtitle: Text(users[index].phone),
+                      title: Text(usersForFactory[index].name),
+                      subtitle: Text(usersForFactory[index].phone),
                     ),
                   );
                 },
@@ -310,7 +339,6 @@ class _InvitationPageState extends State<InvitationPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     nameController.addListener(() {
       _checkSubmitButton();
@@ -327,8 +355,75 @@ class _InvitationPageState extends State<InvitationPage> {
     });
   }
 
-  void addUser(String name, String phone) {
-    users.add(User(name: name, phone: phone));
+  Future<void> addUser(String name, String phone) async {
+    // ignore: prefer_const_declarations
+    final String url =
+        'http://10.104.0.248:5001/api/factories/66840cbc5bd189c3098c8510/engineers';
+    const String bearerToken =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjljMDdkMjhmMzU0OGZlZjhhNzZjYmYiLCJpYXQiOjE3MjE1MDE3MDcsImV4cCI6MTcyMjEwNjUwN30.7pYpTrrSzjG8JQmyNckA9meUio1GIL3p_XMjBu-MRmE';
+
+    final headers = {
+      'Authorization':
+          'Bearer $bearerToken',
+      'Content-Type': 'application/json',
+    };
+    final body = jsonEncode({
+      "engineers": [
+        {
+          "name": name,
+          "specialization": "Normal Engineer",
+          "phoneNumber": phone,
+        }
+      ]
+    });
+
+    try {
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: body);
+      /* prompt for response
+      print('Sending request to $url with body: $body');
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: body);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      */
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final newUser = User(name: name, phone: phone);
+        setState(() {
+          if (factoryContacts.containsKey(widget.currentFactoryIndex)) {
+            factoryContacts[widget.currentFactoryIndex]!.add(newUser);
+          } else {
+            factoryContacts[widget.currentFactoryIndex] = [newUser];
+          }
+        });
+        Navigator.pop(context);
+      } else {
+        _showErrorDialog('Failed to add user: ${response.statusCode}');
+      }
+    } catch (e) {
+      //print('Error: $e');
+      _showErrorDialog('Error adding user: $e');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -336,18 +431,13 @@ class _InvitationPageState extends State<InvitationPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-          ),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           iconSize: 30,
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text(
-          'Factory ${widget.currentFactoryIndex}',
-        ),
+        title: Text('Factory ${widget.currentFactoryIndex}'),
         titleTextStyle: const TextStyle(
             color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
         centerTitle: true,
@@ -364,18 +454,17 @@ class _InvitationPageState extends State<InvitationPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Center(
-                  child: Text('Invitation',
-                      style: TextStyle(
-                          fontSize: 40, fontWeight: FontWeight.bold))),
-              const Center(
-                  child: Text('Invite user',
-                      style: TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.normal))),
-              const SizedBox(height: 10),
-              const Text(
-                'Owner\'s Name',
-                style: TextStyle(fontSize: 20),
+                child: Text('Invitation',
+                    style:
+                        TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
               ),
+              const Center(
+                child: Text('Invite user',
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.normal)),
+              ),
+              const SizedBox(height: 10),
+              const Text('Owner\'s Name', style: TextStyle(fontSize: 20)),
               const SizedBox(height: 10),
               TextField(
                 key: const Key("name"),
@@ -388,10 +477,8 @@ class _InvitationPageState extends State<InvitationPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                "Owner\'s Phone Number",
-                style: TextStyle(fontSize: 20),
-              ),
+              const Text("Owner\'s Phone Number",
+                  style: TextStyle(fontSize: 20)),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -429,10 +516,7 @@ class _InvitationPageState extends State<InvitationPage> {
                               '+60${phoneController.text}');
                         }
                       : null,
-                  child: const Text(
-                    "Submit",
-                    style: TextStyle(fontSize: 20),
-                  ),
+                  child: const Text("Submit", style: TextStyle(fontSize: 20)),
                 ),
               ),
             ],
@@ -450,7 +534,8 @@ class FactoryReader extends StatefulWidget {
   final double readingWaterLevel;
   final double readingPowerFrequency;
   final String readingDateTime;
-  
+
+  //final String millID;
 
   const FactoryReader({
     Key? key,
@@ -460,6 +545,7 @@ class FactoryReader extends StatefulWidget {
     required this.readingWaterLevel,
     required this.readingPowerFrequency,
     required this.readingDateTime,
+    required this.millID,
   }) : super(key: key);
 
   @override
@@ -518,6 +604,59 @@ class _FactoryReaderState extends State<FactoryReader> {
                   ),
                 ],
               ),
+             
+            //gauge with meter reading nagivation
+            /*GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _buildGaugeContainer(
+                    title: 'Steam Pressure', ///change this into a variable
+                    value: widget.readingSteamPressure,
+                    unit: 'bar',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GraphView(
+                                  millID: widget.millID, paramtype: 'Steam Pressure')));
+                    }),
+                _buildGaugeContainer(
+                    title: 'Steam Flow',
+                    value: widget.readingSteamFlow,
+                    unit: 'T/H',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GraphView(
+                                  millID: widget.millID, paramtype: 'Steam Flow')));
+                    }),
+                _buildGaugeContainer(
+                    title: 'Water Level',
+                    value: widget.readingWaterLevel,
+                    unit: '%',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GraphView(
+                                  millID: widget.millID, paramtype: 'Water Level')));
+                    }),
+                _buildGaugeContainer(
+                    title: 'Power Frequency',
+                    value: widget.readingPowerFrequency,
+                    unit: 'Hz',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GraphView(
+                                  millID: widget.millID, paramtype: 'Power Frequency')));
+                    }),
+              ],*/
+
             ),
             SizedBox(height: 20),
             Text(
@@ -595,7 +734,73 @@ class _FactoryReaderState extends State<FactoryReader> {
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
+  /*changes before azween
+  Widget _buildGaugeContainer(
+      {required String title,
+      required double value,
+      required String unit,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              FittedBox(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ),
+              Container(
+                height: 100,
+                width: 100,
+                padding: const EdgeInsets.all(10),
+                child: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    return SfRadialGauge(
+                      axes: <RadialAxis>[
+                        RadialAxis(
+                          minimum: 0,
+                          maximum: 100,
+                          showLabels: false,
+                          showTicks: true,
+                          startAngle: 180,
+                          endAngle: 0,
+                          radiusFactor: 1.5,
+                          canScaleToFit: true,
+                          axisLineStyle: const AxisLineStyle(
+                            thickness: 0.3,
+                            thicknessUnit: GaugeSizeUnit.factor,
+                          ),
+                          pointers: <GaugePointer>[
+                            RangePointer(
+                              value: value,
+                              color: value < 31 ? Colors.red : Colors.green,
+                              width: 0.3,
+                              sizeUnit: GaugeSizeUnit.factor,
+                            ),
+                          ],
+                          annotations: <GaugeAnnotation>[
+                            GaugeAnnotation(
+                              widget: Text(
+                                '$value $unit',
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                ), */
                               ),
+                              angle: 90,
+                              positionFactor: 0.4,
                             ),
                             angle: 90,
                             positionFactor: 0.4,
@@ -606,8 +811,8 @@ class _FactoryReaderState extends State<FactoryReader> {
                   );
                 }
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
